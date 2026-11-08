@@ -87,10 +87,27 @@ and a scheduler.
 
 Full version: [doctrine/000-doctrine.md](doctrine/000-doctrine.md)
 
+## v1.1 — from the field
+
+Upgrades from community deployment feedback (details in
+[FIELD-NOTES.md](FIELD-NOTES.md)):
+
+- **Grep-first, enforced** — a `pre_tool_call` hook can gate the first real
+  tool call of a session until memory has been searched, turning the
+  retrieval convention into structure. Hermes ships the hook mechanism.
+- **Read telemetry** — log every vault read as *used / wasted / missed*;
+  anything missed three times gets promoted (fix the file's discoverability
+  or add a gate nudge). This catches the two failures a recall probe can't:
+  the memory that existed and was never opened, and the one quietly wrong.
+- **External ground-truth review** — the weekly immune pass verifies live
+  threads against their authoritative external sources; drift is a
+  contradiction, flagged for a human.
+
 ## Honest limits
 
 - No mid-turn auto-injection ("hunches") — approximated by the tiny injected
-  pointer plus relevance-loaded skills
+  pointer plus relevance-loaded skills, and (v1.1) an enforced search gate
+  at tool-call time where hooks are available
 - The immune pass is grep-based cross-referencing: it catches lexical
   contradictions, not semantic ones
 - Vault quality is bounded by distiller discipline — garbage in, greppable

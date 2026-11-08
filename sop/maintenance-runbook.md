@@ -31,10 +31,20 @@ Both jobs are Hermes crons. Prompts live in `templates/cron-prompts.md`.
    `reference/` for contradictions. Record conflicts as
    memory/YYYY-MM-DD-immune-flag-<slug>.md — both sides preserved, operator
    adjudicates (Doctrine 5).
-3. Doctrine integrity: `doctrine/000-doctrine.md` must still carry
+3. **External ground-truth review (v1.1):** for each live `state/` thread
+   with an authoritative external source (ticket tracker, monitoring,
+   deployment system), verify the thread against that source. Drift is a
+   contradiction — flag it, keep both sides, never silently rewrite.
+4. **Read telemetry (v1.1):** classify the week's vault reads as
+   used / wasted / missed (from the post_tool_call read log, if installed).
+   Anything missed three times gets promoted: fix the file's
+   keywords/links (discoverability problem) or add a pre_tool_call gate
+   nudge (compliance problem). A memory read-then-contradicted-by-ground-
+   truth is the dangerous class — surface it loudly.
+5. Doctrine integrity: `doctrine/000-doctrine.md` must still carry
    `status: operator-locked` and its laws must not have been edited by the
    distiller.
-4. If the vault carries instance-specific canary checks (e.g. a source patch
+6. If the vault carries instance-specific canary checks (e.g. a source patch
    that an update may clobber), verify and alert loudly when missing.
 
 ## Recall probe (health check, any time)
