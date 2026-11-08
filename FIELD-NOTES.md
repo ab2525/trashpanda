@@ -33,13 +33,31 @@ hooks:
                                                   # for headless runs
 ```
 
-`vault-gate.py` keeps a session-scoped marker: until a `search_files` call
-has touched the vault this session, the first gated tool call gets the
-inject-context response ("vault unsearched — grep memory-vault before
-acting"), non-blocking so it steers rather than stalls. This is a spec, not
-a shipped script — validate against your Hermes version's hook wire format
-(see the Hermes hooks documentation for the full JSON protocol) before
-deploying.
+**Shipped as `hooks/vault-gate.py`.** One script, two `pre_tool_call`
+entries: a `search_files|read_file` matcher records (in
+`<vault>/.gate/<session>.searched`) that this session touched the vault; a
+`terminal|execute_code|write_file|patch|browser_exec` matcher blocks the
+FIRST gated call of an unsearched session with an instruction message the
+model reads as the tool error, then passes freely for the rest of the
+session — the gate steers, it never wedges. Fail-open everywhere (no
+`fail_closed`), malformed payloads pass silently, state is two tiny marker
+files. Wire it:
+
+```yaml
+hooks:
+  pre_tool_call:
+    - matcher: "search_files|read_file"
+      command: "<path-to>/hooks/vault-gate.py <vault-root>"
+    - matcher: "terminal|execute_code|write_file|patch|browser_exec"
+      command: "<path-to>/hooks/vault-gate.py <vault-root>"
+```
+
+On POSIX the shebang runs it directly; on Windows Hermes spawns `.py`
+through the running Hermes interpreter. First use prompts for consent on a
+TTY (`--accept-hooks` / `HERMES_ACCEPT_HOOKS=1` for headless). Validated
+against the documented shell-hook wire format; test fixtures in the repo's
+commit history (9-case suite: block-once, no-deadlock, backslash paths,
+fail-open on malformed stdin).
 
 ## 2. Read telemetry: used / wasted / missed (the real health check)
 

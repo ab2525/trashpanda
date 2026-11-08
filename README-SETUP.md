@@ -55,6 +55,30 @@ templates/                    File skeletons: lesson, incident, state,
    - weekly immune pass (Sunday 04:00, deliver=origin — silent when clean)
    Both load a skill or the runbook path; both must be self-contained
    prompts (cron runs in a fresh session with no chat context).
+5b. **Optional but recommended — enforce grep-first and log reads.** Wire
+   the shipped hook scripts (`hooks/vault-gate.py`,
+   `hooks/vault-read-log.py`) into the `hooks:` block of profile
+   `config.yaml`:
+
+   ```yaml
+   hooks:
+     pre_tool_call:
+       - matcher: "search_files|read_file"
+         command: "<repo>/hooks/vault-gate.py <vault-root>"
+       - matcher: "terminal|execute_code|write_file|patch|browser_exec"
+         command: "<repo>/hooks/vault-gate.py <vault-root>"
+     post_tool_call:
+       - matcher: "search_files|read_file"
+         command: "<repo>/hooks/vault-read-log.py <vault-root>"
+   ```
+
+   The gate blocks the first real tool call of any session that hasn't
+   searched the vault yet (once per session — it steers, never wedges).
+   The read logger appends vault reads to `<vault>/.telemetry/reads.jsonl`;
+   `scripts/read_telemetry.py [--days=N]` reports surfaced / never-opened /
+   search-dust, and the weekly immune pass turns that data into
+   used/wasted/missed judgement. First hook use prompts for consent on a
+   TTY; headless runs need `--accept-hooks` or `HERMES_ACCEPT_HOOKS=1`.
 6. **Lock the doctrine.** Replace the `granted_by:` frontmatter with your
    operator name and date. From that moment the agent refuses to edit
    `doctrine/` without explicit instruction; the immune cron audits that the

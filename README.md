@@ -92,13 +92,15 @@ Full version: [doctrine/000-doctrine.md](doctrine/000-doctrine.md)
 Upgrades from community deployment feedback (details in
 [FIELD-NOTES.md](FIELD-NOTES.md)):
 
-- **Grep-first, enforced** — a `pre_tool_call` hook can gate the first real
-  tool call of a session until memory has been searched, turning the
-  retrieval convention into structure. Hermes ships the hook mechanism.
-- **Read telemetry** — log every vault read as *used / wasted / missed*;
-  anything missed three times gets promoted (fix the file's discoverability
-  or add a gate nudge). This catches the two failures a recall probe can't:
-  the memory that existed and was never opened, and the one quietly wrong.
+- **Grep-first, enforced** — `hooks/vault-gate.py` (shipped): blocks the
+  first real tool call of a session that hasn't searched the vault, once —
+  the convention becomes structure without ever deadlocking the agent.
+- **Read telemetry** — `hooks/vault-read-log.py` + `scripts/read_telemetry.py`
+  (shipped): every vault read is logged as data; the weekly pass judges it
+  used / wasted / missed; anything missed three times gets promoted (fix
+  the file's discoverability or add a gate nudge). This catches the two
+  failures a recall probe can't: the memory that existed and was never
+  opened, and the one quietly wrong.
 - **External ground-truth review** — the weekly immune pass verifies live
   threads against their authoritative external sources; drift is a
   contradiction, flagged for a human.
